@@ -1,0 +1,20 @@
+# action.yaml
+name: 'Guacamole GitHub Action'
+author: 'Benjamin Sanvoisin'
+description: 'A github action to check your terraform code with guacamole'
+inputs:
+  directory:
+    default: '.'
+    description: 'Directory with infrastructure code and/or package manager files to scan'
+    required: false
+  verbose:
+    default: 'false'
+    description: 'Verbose mode'
+    required: false
+
+runs:
+  using: docker
+  image: ghcr.io/padok-team/guacamole:latest
+  args:
+    - "-d=${{ inputs.directory }}"
+    - "-v=${{ inputs.verbose }}"
