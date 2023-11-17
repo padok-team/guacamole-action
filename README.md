@@ -8,7 +8,7 @@ This GitHub Action runs [guacamole](https://github.com/padok-team/guacamole) aga
 on: [push]
 
 jobs:
-  checkov-image-scan:
+  guacamole-quality-scan:
     runs-on: ubuntu-latest
     name: guacamole-static-check
     steps:
