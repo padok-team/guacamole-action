@@ -1,24 +1,28 @@
 # action.yaml
-name: 'Guacamole GitHub Action'
-author: 'Benjamin Sanvoisin'
-description: 'A github action to check your terraform code with guacamole'
+name: "Guacamole GitHub Action"
+author: "Benjamin Sanvoisin"
+description: "A github action to check your terraform code with guacamole"
 inputs:
   check_type:
-    default: 'static'
-    description: 'Type of check to perform'
+    default: "static"
+    description: "Type of check to perform"
     required: false
   path:
-    default: '.'
-    description: 'Path with infrastructure code and/or package manager files to scan'
+    default: "."
+    description: "Path with infrastructure code and/or package manager files to scan"
     required: false
   verbose:
-    default: 'false'
-    description: 'Verbose mode'
+    default: "false"
+    description: "Verbose mode"
+    required: false
+  version:
+    default: "main"
+    description: "Guacamole version to install"
     required: false
 
 runs:
   using: docker
-  image: docker://ghcr.io/padok-team/guacamole:main
+  image: docker://ghcr.io/padok-team/guacamole:${{ inputs.version }}
   args:
     - "${{ inputs.check_type }}"
     - "-p=${{ inputs.path }}"
