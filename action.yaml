@@ -21,7 +21,7 @@ inputs:
 
 runs:
   using: docker
-  image: docker://ghcr.io/padok-team/guacamole:v0.3.3
+  image: docker://ghcr.io/padok-team/guacamole:v0.3.4
   args:
     - "${{ inputs.check_type }}"
     - "-p=${{ inputs.path }}"

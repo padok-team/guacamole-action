@@ -16,5 +16,5 @@ jobs:
         uses: actions/checkout@master
       - name: Run guacamole action
         id: guacamole
-        uses: padok-team/guacamole-action@v1.3.3
+        uses: padok-team/guacamole-action@v1.3.4
 ```
