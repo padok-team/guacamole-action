@@ -1,29 +1,93 @@
-# action.yaml
 name: "Guacamole GitHub Action"
 author: "Benjamin Sanvoisin"
-description: "A github action to check your terraform code with guacamole"
+description: "Check your Terraform/Terragrunt code with guacamole and report the IaC score on your pull requests"
+branding:
+  icon: "check-circle"
+  color: "green"
+
 inputs:
   check_type:
     default: "static"
-    description: "Type of check to perform"
+    description: "Guacamole command to run: static, static module, static layer, state, all, profile or ci"
     required: false
   path:
     default: "."
-    description: "Path with infrastructure code and/or package manager files to scan"
+    description: "Path with infrastructure code to scan (directory containing layers/, or modules/ for the ci check)"
     required: false
   verbose:
     default: "false"
     description: "Verbose mode"
     required: false
   ignorefile:
+    default: ".guacamoleignore"
     description: "File with patterns to ignore"
     required: false
+  version:
+    # renovate: datasource=github-releases depName=padok-team/guacamole
+    default: "v0.3.4"
+    description: "Version of guacamole to install"
+    required: false
+
+  # Post pull request comment related inputs
+  base_branch:
+    description: "branch to diff against (defaults to the pull request base branch)"
+    required: false
+  scan_all:
+    default: "false"
+    description: "scan every layer/module instead of the ones changed by the pull request"
+    required: false
+  fail_on_error:
+    default: "false"
+    description: "fail the step when at least one check fails"
+    required: false
+  comment:
+    default: "true"
+    description: "post the IaC score as a pull request comment"
+    required: false
+  github_token:
+    default: "${{ github.token }}"
+    description: "token used to post the pull request comment (needs pull-requests: write)"
+    required: false
+
+outputs:
+  score:
+    description: "global IaC score, in percent"
+    value: ${{ steps.guacamole.outputs.score }}
+  passed:
+    description: "number of passed checks"
+    value: ${{ steps.guacamole.outputs.passed }}
+  total:
+    description: "total number of checks"
+    value: ${{ steps.guacamole.outputs.total }}
 
 runs:
-  using: docker
-  image: docker://ghcr.io/padok-team/guacamole:v0.3.4
-  args:
-    - "${{ inputs.check_type }}"
-    - "-p=${{ inputs.path }}"
-    - "-v=${{ inputs.verbose }}"
-    - "-w=${{ inputs.ignorefile }}"
+  using: composite
+  steps:
+    - name: Install guacamole
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+        mkdir -p "${RUNNER_TEMP}/guacamole"
+        curl -fsSL "https://github.com/padok-team/guacamole/releases/download/v${VERSION#v}/guacamole_${VERSION#v}_${OS}_${ARCH}.tar.gz" \
+          | tar -xz -C "${RUNNER_TEMP}/guacamole" guacamole
+        echo "${RUNNER_TEMP}/guacamole" >> "${GITHUB_PATH}"
+
+    - name: Run guacamole
+      id: guacamole
+      shell: bash
+      env:
+        CHECK_TYPE: ${{ inputs.check_type }}
+        CODEBASE_PATH: ${{ inputs.path }}
+        VERBOSE: ${{ inputs.verbose }}
+        IGNOREFILE: ${{ inputs.ignorefile }}
+        GUACAMOLE_PROJECT_DIR: ${{ inputs.path }}
+        GUACAMOLE_DIFF_BASE_BRANCH: ${{ inputs.base_branch }}
+        GUACAMOLE_CI_SCAN_ALL: ${{ inputs.scan_all }}
+        GUACAMOLE_CI_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
+        GUACAMOLE_CI_COMMENT: ${{ inputs.comment }}
+        GUACAMOLE_GITHUB_TOKEN: ${{ inputs.github_token }}
+      # CHECK_TYPE is unquoted on purpose so that "static module" is split into two arguments
+      run: guacamole ${CHECK_TYPE} -p "${CODEBASE_PATH}" -v="${VERBOSE}" -w "${IGNOREFILE}"

@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>padok-team/renovate-config"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update the default guacamole version installed by the action",
+      "managerFilePatterns": [
+        "/^action\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+default: \"(?<currentValue>[^\"]+)\""
+      ]
+    }
   ]
 }

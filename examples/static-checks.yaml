@@ -1,0 +1,21 @@
+# Run the static checks on the whole codebase on every push.
+name: Guacamole static checks
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  guacamole:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run guacamole
+        uses: padok-team/guacamole-action@v2
+        with:
+          check_type: static
