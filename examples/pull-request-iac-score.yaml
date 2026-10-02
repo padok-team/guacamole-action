@@ -1,0 +1,27 @@
+# Post the IaC score of the layers/modules changed by a pull request as a PR comment.
+name: Guacamole IaC score
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  guacamole:
+    name: IaC score
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # The base branch history is needed to compute the diff
+          fetch-depth: 0
+
+      - name: Run guacamole
+        uses: padok-team/guacamole-action@v2
+        with:
+          check_type: ci
+          # Pull requests opened from a fork get a read-only token: skip the comment for them
+          comment: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
