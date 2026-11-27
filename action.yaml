@@ -24,7 +24,7 @@ inputs:
     required: false
   version:
     # renovate: datasource=github-releases depName=padok-team/guacamole
-    default: "v0.3.4"
+    default: "v0.4.0"
     description: "Version of guacamole to install"
     required: false
 
